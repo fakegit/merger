@@ -1,9 +1,11 @@
 
-// Merger - Merge Your Qrcode Together. Even Quicker.
-// User docs: https://merger.qrcdn.com
-// Released under GNU General Public License v3.0. Open source at https://github.com/hifocus/merger.
-// Author @hifocus (https://github.com/hifocus), and contributors(https://github.com/hifocus/merger/graphs/contributors).
-// Copyright reservation is required.
+/*! Merger v0.28.6 - Merge Your Qrcode Together. Even Quicker. - https://merger.huangxin.org */
+/*! jquery-qrcode v0.18.0 - https://larsjung.de/jquery-qrcode/ */
+
+// Homepage: https://merger.huangxin.org
+// Released under GNU General Public License v3.0. Open source at https://github.com/qr-merger/merger.
+// Author @hifocus (https://github.com/hifocus), and contributors(https://github.com/qr-merger/merger/graphs/contributors).
+
 
 var client;
 var selected;
@@ -58,7 +60,6 @@ if (multilingual === false) {
   var finaltitle = title;
   // var finalsub = subtitle;
   var wechatscan = "微信扫一扫 向" + finalname + "支付";
-  var tenpayscan = "手机QQ扫一扫 向" + finalname + "支付";
   var alipayscan = "支付宝扫一扫 向" + finalname + "支付";
   var payto = "";
   var presshold = "长按识别二维码 向" + finalname + "支付";
@@ -80,7 +81,6 @@ else {
     document.title = '向' + finalname + method + aftertitle;
     var trans_wx = "微信"
     var trans_ali = "支付宝"
-    var trans_tp = "QQ手机版"
     var finaltitle = "向" + finalname + method;
     var finalsub = "从下方选择" + method + "方式";
     var trans_wx = "微信";
@@ -89,7 +89,6 @@ else {
     var payto = " 向" + finalname + method;
     var notavail = "🚫 目前没有可用的" + method + "方式"
     var wechatscan = trans_wx + scan;
-    var tenpayscan = trans_tp + scan;
     var alipayscan = trans_ali + scan;
   }
   else if (/zh-TW|zh-HK|zh-tw|zh-hk|zh-Hant|zh-hant|tw|hk/i.test(userLang)) {
@@ -104,13 +103,11 @@ else {
     document.title = '向' + finalname + method + aftertitle;
     var trans_wx = "WeChat "
     var trans_ali = "支付寶"
-    var trans_tp = "QQ手機版"
     var finaltitle = "向" + finalname + method;
     var finalsub = "從下方選擇" + method + "方式";
     var scan = "掃一掃";
     var notavail = "🚫 目前沒有可用的" + method + "方式";
     var wechatscan = trans_wx + scan;
-    var tenpayscan = trans_tp + scan;
     var alipayscan = trans_ali + scan;
     var presshold = "長按識別二維碼";
     var payto = " 向" + finalname + method;
@@ -130,7 +127,6 @@ else {
     document.write("<style>body { font-family: sans-serif; }</style>"); // Oh I f**king love Segoe UI
     var trans_wx = "WeChat"
     var trans_ali = "AliPay"
-    var trans_tp = "QQ Mobile"
     var finaltitle = method + " to" + finalname_eng;
     var finalsub = "Select a " + method_t.replace(method_t.charAt(0), method_t.charAt(0).toLowerCase()) + " method from below";
     var scanhint = "Scan the QR Code to " + method + finalname_eng;
@@ -139,18 +135,12 @@ else {
     var payto = "";
     var notavail = "🚫 Currently no " + method_t.replace(method_t.charAt(0), method_t.charAt(0).toLowerCase()) + " method available";
     var wechatscan = scan + trans_wx;
-    var tenpayscan = scan + trans_tp;
     var alipayscan = scan + trans_ali;
   }
 }
 
 // Remove payment methods if not set up
 var error_num = 0;
-if (typeof tenpay === "undefined" || tenpay === null || tenpay === "") {
-  document.getElementById("depends").removeChild(document.getElementById("tenpaybtn"));
-  error_num += 1;
-  var notenpay = true;
-}
 if (typeof wechat === "undefined" || wechat === null || wechat === "") {
   document.getElementById("depends").removeChild(document.getElementById("toclick"));
   error_num += 1;
@@ -189,7 +179,7 @@ else {
 }
 
 // General UserAgent verify rules
-if (navigator.userAgent.match(/Alipay/i)) {
+if (navigator.userAgent.includes('Alipay')) {
   if (noalipay === true) {
     alert("AliPay is not set up by the admin \n 管理员没有设置支付宝");
     if (location.href.substr(location.href.lastIndexOf('#') + 1) == "showqrcode" && !selected) document.getElementById('showqrcode').style.display = "none";
@@ -202,7 +192,7 @@ if (navigator.userAgent.match(/Alipay/i)) {
     removal();
   }
 }
-else if (navigator.userAgent.match(/MicroMessenger\//i)) {
+else if (navigator.userAgent.includes('MicroMessenger')) {
   if (nowechat === true) {
     alert("WeChat Pay is not set up by the admin \n 管理员没有设置微信支付");
     if (location.href.substr(location.href.lastIndexOf('#') + 1) == "showqrcode" && !selected) document.getElementById('showqrcode').style.display = "none";
@@ -216,23 +206,7 @@ else if (navigator.userAgent.match(/MicroMessenger\//i)) {
     var finaltitle = "";
     var finalsub = "";
     removal();
-  }
-}
-
-else if (navigator.userAgent.match(/QQ\//i)) {
-  if (notenpay === true) {
-    alert("Tenpay is not set up by the admin \n 管理员没有设置 QQ 钱包")
-    if (location.href.substr(location.href.lastIndexOf('#') + 1) == "showqrcode" && !selected) document.getElementById('showqrcode').style.display = "none";
-  }
-  else {
-    window.location.href = window.location.href.match(/^[^\#\?]+/)[0] + "#showqrcode";
-    document.getElementById("titleinfo").innerHTML = presshold + payto;
-    document.getElementById("qrcontainer").removeChild(document.getElementById("currentqrcode")); // remove default qrcode (mobile qq only)
-    // Import from api
-    document.getElementById("tenpayonly").src = qrcodeapi + urlencode(tenpay);
-    var finaltitle = "";
-    var finalsub = "";
-    removal();
+    console.log("%c WeChat Pay Detected ", "color: green");
   }
 }
 else {
@@ -244,7 +218,7 @@ else {
 }
 // UserAgent Verify Part Ends
 
-if (error_num === 4) { // Show not available message to user if all four methods are not set up
+if (error_num === 3) { // Show not available message to user if all four methods are not set up
   var finalsub = notavail;
   console.log("%c No Payment Method Available to Users ", "color: red");
 }
@@ -262,12 +236,6 @@ function openalipay() {
   client = alipay;
   showqrcode();
 }
-function opentenpay() {
-  selected = "yes";
-  document.getElementById("titleinfo").innerHTML = tenpayscan + payto;
-  client = tenpay;
-  showqrcode();
-}
 function removal() {
   document.getElementById("h").removeChild(document.getElementById("i")); // remove profile photo
   document.getElementById("pending").removeChild(document.getElementById("depends")); // remove buttons
@@ -283,7 +251,7 @@ document.getElementById("name").innerHTML = finaltitle;
 document.getElementById("description").innerHTML = finalsub;
 
 // Copyright console log copied from https://github.com/MoePlayer/APlayer/. Thank you.
-console.log(`${'\n'} %c Merger 0.27.0 %c https://github.com/hifocus/merger ${'\n'}`, 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #fadfa3; padding:5px 0;');
+console.log(`${'\n'} %c Merger 0.28.6 %c https://github.com/qr-merger/merger ${'\n'}`, 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #fadfa3; padding:5px 0;');
 
 function showqrcode() {
   if (location.href.substr(location.href.lastIndexOf('#') + 1) == "showqrcode" && selected == "yes") document.getElementById('showqrcode').style.display = "flex";
@@ -297,4 +265,12 @@ function showqrcode() {
     size: 300 * scale,
     text: client
   });
+}
+
+if (typeof tracking !== 'undefined' && tracking === true) {
+    (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "hkeg670rpp");
 }

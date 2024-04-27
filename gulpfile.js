@@ -6,28 +6,41 @@ const htmlmin = require('gulp-html-minifier-terser');
 const rename = require('gulp-rename');
 const htmlreplace = require('gulp-html-replace');
 
-
-
-gulp.task('pack-css', async function () {
-  const compressedCSS = gulp.src(['./assets/styles/spectre.css/spectre-modified.css', './assets/styles/style.css'])
-    .pipe(concat('style.main.css'))
-    .pipe(cleanCSS({
+gulp.task('pack-css', function () {
+  // Start the stream from the source files
+  let stream = gulp.src([
+      './assets/styles/spectre.css/spectre-modified.css',
+      './assets/styles/style.css'
+  ])
+  .pipe(concat('style.main.css'))
+  .pipe(cleanCSS({
       level: 2
-    }))
-  compressedCSS.pipe(gulp.dest('./assets/bundles/'))
-  if (process.env.NODE_ENV == 'production') {
-    compressedCSS.pipe(gulp.dest('./build/assets/'))
+  }))
+  .pipe(gulp.dest('./assets/bundles/'));
+
+  if (process.env.NODE_ENV === 'production') {
+      stream = stream.pipe(gulp.dest('./build/assets/'));
   }
+
+  return stream;
 });
 
-gulp.task('pack-js', async function () {
-  const compressedJS = gulp.src(['./assets/js/function.js', './assets/js/iconfont.js'])
-    .pipe(concat('function.main.js'))
-    .pipe(terser())
-  compressedJS.pipe(gulp.dest('./assets/bundles/'))
-  if (process.env.NODE_ENV == 'production') {
-    compressedJS.pipe(gulp.dest('./build/assets/'))
+gulp.task('pack-js', function () {
+  let stream = gulp.src([
+      './assets/js/iconfont.js',
+      './node_modules/jquery/dist/jquery.js',
+      './assets/js/jquery-qrcode.js',
+      './assets/js/function.js'
+  ])
+  .pipe(concat('function.main.js'))
+  .pipe(terser())
+  .pipe(gulp.dest('./assets/bundles/'));
+
+  if (process.env.NODE_ENV === 'production') {
+      stream = stream.pipe(gulp.dest('./build/assets/'));
   }
+
+  return stream;
 });
 
 gulp.task('minify-html', async function () {
@@ -51,11 +64,20 @@ gulp.task('minify-html', async function () {
     .pipe(gulp.dest('./'));
 });
 
+// gulp.task('temp-copy', function() {
+//   return gulp.src('assets/bundles/function.main.js')
+//     .pipe(rename('function_main.js'))
+//     .pipe(gulp.dest('assets/bundles'))
+//     .pipe(gulp.src('assets/bundles/style.main.css'))
+//     .pipe(rename('style_main.css'))
+//     .pipe(gulp.dest('assets/bundles'));
+// });
+
 gulp.task('replace-js-css', function (done) {
   return gulp.src('./merger.html')
     .pipe(htmlreplace({
-      'css': '/assets/style.main.css',
-      'js': '/assets/function.main.js'
+      'css': 'assets/style.main.css',
+      'js': 'assets/function.main.js'
     }))
     .pipe(rename('index.html'))
     .pipe(gulp.dest('build/'))
@@ -67,5 +89,5 @@ gulp.task('build-html', async function () {
   gulp.start('minify-html');
 })
 
-gulp.task('compile', gulp.parallel('pack-css', 'pack-js'));
-gulp.task('default', gulp.series('replace-js-css', gulp.parallel('minify-html', 'pack-js', 'pack-css' )));
+gulp.task('compile', gulp.series(gulp.parallel('pack-css', 'pack-js')));
+gulp.task('default', gulp.series(gulp.parallel('replace-js-css', 'pack-js', 'pack-css' ), 'minify-html'));
